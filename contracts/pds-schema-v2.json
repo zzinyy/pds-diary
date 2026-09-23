@@ -1,0 +1,88 @@
+{
+  "schema_name": "pds-schema-v2",
+  "description": "플랜두씨 다이어리 1 (과제 6) — Plan → Do → See 데이터 구조. Supabase(Postgres) 기준.",
+  "date_rule": {
+    "storage": "모든 시각(timestamptz)은 UTC로 저장한다. 날짜(date)는 시간대 없는 그레고리력 YYYY-MM-DD로 저장한다.",
+    "display": "화면에는 항상 Asia/Seoul(KST, UTC+9)로 변환해 표시한다.",
+    "delay_rule": "지연 판정은 Asia/Seoul 기준 '오늘' 날짜와 todos.deadline을 비교한다. status가 '완료'인 항목은 지연으로 중복 집계하지 않는다."
+  },
+  "auth_note": "이번 과제(6번)에는 로그인이 없다. 모든 테이블의 RLS는 익명(anon) 전체 읽기/쓰기로 열려 있다. 7번 과제에서 로그인을 붙이고 RLS를 사용자 소유 데이터로 좁힌다.",
+  "tables": [
+    {
+      "name": "plans",
+      "description": "계획. 이번 과제에서는 1건(plan-001, ALEPH 진행)만 사용하지만 여러 계획을 지원하도록 설계함.",
+      "columns": [
+        { "name": "id", "type": "text", "pk": true, "note": "예: plan-001" },
+        { "name": "title", "type": "text" },
+        { "name": "category", "type": "text", "note": "운동/공부/업무/게임연습/ALEPH 진행 등" },
+        { "name": "start_date", "type": "date" },
+        { "name": "end_date", "type": "date" },
+        { "name": "success_criteria", "type": "text", "note": "무엇이 되면 성공인지" },
+        { "name": "estimated_hours", "type": "numeric", "note": "계획 전체 예상 소요 시간(h)" },
+        { "name": "priority", "type": "text", "enum": ["상", "중", "하"] },
+        { "name": "note", "type": "text" },
+        { "name": "carryover_note", "type": "text", "note": "돌아보기에서 다음 계획으로 넘기는 한 줄" },
+        { "name": "created_at", "type": "timestamptz" },
+        { "name": "updated_at", "type": "timestamptz" }
+      ]
+    },
+    {
+      "name": "plan_revisions",
+      "description": "계획을 고칠 때마다, 고치기 '전' 값을 스냅샷으로 남긴다. plans.id가 그대로 유지된 채 내용만 바뀐다.",
+      "columns": [
+        { "name": "id", "type": "bigint", "pk": true },
+        { "name": "plan_id", "type": "text", "fk": "plans.id" },
+        { "name": "version_no", "type": "int" },
+        { "name": "snapshot", "type": "jsonb", "note": "고치기 전 plans 행 전체" },
+        { "name": "saved_at", "type": "timestamptz" }
+      ]
+    },
+    {
+      "name": "todos",
+      "description": "계획에 딸린 할 일.",
+      "columns": [
+        { "name": "id", "type": "text", "pk": true, "note": "예: t-001" },
+        { "name": "plan_id", "type": "text", "fk": "plans.id" },
+        { "name": "title", "type": "text" },
+        { "name": "deadline", "type": "date" },
+        { "name": "period_note", "type": "text", "note": "반복/준비기간처럼 단일 날짜로 못 담는 보조 설명" },
+        { "name": "priority", "type": "text", "enum": ["상", "중", "하"] },
+        { "name": "tag", "type": "text" },
+        { "name": "estimated_hours", "type": "numeric" },
+        { "name": "status", "type": "text", "enum": ["진행중", "완료"] },
+        { "name": "deleted", "type": "boolean", "note": "소프트 삭제. true면 목록/집계에서 제외." },
+        { "name": "completed_at", "type": "timestamptz" },
+        { "name": "created_at", "type": "timestamptz" },
+        { "name": "updated_at", "type": "timestamptz" }
+      ]
+    },
+    {
+      "name": "executions",
+      "description": "실제로 한 일 기록. 계획(todos) 값과 별개로 저장되며 계획 값을 덮어쓰지 않는다.",
+      "columns": [
+        { "name": "id", "type": "text", "pk": true, "note": "예: e-001" },
+        { "name": "todo_id", "type": "text", "fk": "todos.id" },
+        { "name": "start_at", "type": "timestamptz" },
+        { "name": "end_at", "type": "timestamptz" },
+        { "name": "actual_hours", "type": "numeric", "note": "집계의 기준이 되는 권위값. start/end 차이로 재계산하지 않는다." },
+        { "name": "blocker_reason", "type": "text", "note": "빈 문자열이면 '막힘 없음'으로 취급." },
+        { "name": "note", "type": "text", "note": "무엇을 했는지 짧은 설명(선택)" },
+        { "name": "created_at", "type": "timestamptz" }
+      ]
+    }
+  ],
+  "relationships": [
+    "plans (1) -- (N) plan_revisions",
+    "plans (1) -- (N) todos",
+    "todos (1) -- (N) executions"
+  ],
+  "review_aggregation_rules": {
+    "plan_count": "해당 plan_id의, deleted=false인 todos 개수",
+    "done_count": "그중 status='완료'인 개수",
+    "delayed_count": "status<>'완료' AND deadline < 오늘(Asia/Seoul) 인 개수. 완료 건은 지연으로 세지 않음.",
+    "blocked_count": "해당 todo에 연결된 executions 중 blocker_reason이 비어있지 않은 것이 1건이라도 있는 todo의 개수(중복 카운트 안 함)",
+    "estimated_hours_sum": "대상 todos.estimated_hours 합",
+    "actual_hours_sum": "대상 todos에 연결된 executions.actual_hours 합",
+    "diff": "actual_hours_sum - estimated_hours_sum (데이터 없으면 0)"
+  }
+}
