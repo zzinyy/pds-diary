@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>플랜두씨 다이어리 — 계획 · 실행 · 돌아보기</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📓</text></svg>" />
+<link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <div class="wrap">
+    <div class="banner">
+      지금은 로그인이 없어 링크를 아는 사람은 누구나 볼 수 있습니다. 남이 봐도 괜찮은 내용만 넣으세요.
+    </div>
+
+    <header class="app-header">
+      <div>
+        <h1>플랜두씨 다이어리</h1>
+        <div class="sub">계획(Plan) → 실제로 한 일(Do) → 돌아보기(See)</div>
+      </div>
+      <button class="btn" id="btn-export">내 자료 전체 내보내기</button>
+    </header>
+
+    <nav class="tabs">
+      <button class="active" data-tab="plan">계획</button>
+      <button data-tab="todos">할 일</button>
+      <button data-tab="exec">실행 기록</button>
+      <button data-tab="review">돌아보기</button>
+    </nav>
+
+    <section id="panel-plan" class="panel active"></section>
+    <section id="panel-todos" class="panel"></section>
+    <section id="panel-exec" class="panel"></section>
+    <section id="panel-review" class="panel"></section>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script type="module" src="./app.js"></script>
+</body>
+</html>
