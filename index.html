@@ -8,17 +8,23 @@
 <link rel="stylesheet" href="./styles.css" />
 </head>
 <body>
-  <div class="wrap">
-    <div class="banner">
-      지금은 로그인이 없어 링크를 아는 사람은 누구나 볼 수 있습니다. 남이 봐도 괜찮은 내용만 넣으세요.
-    </div>
 
+  <div class="wrap" id="auth-root">
+    <div class="banner">이 화면 뒤의 내 기록은 로그인해야만 보입니다. 계정을 만들거나 로그인하세요.</div>
+    <div class="card" id="auth-card"></div>
+  </div>
+
+  <div class="wrap" id="app-root" style="display:none">
     <header class="app-header">
       <div>
         <h1>플랜두씨 다이어리</h1>
         <div class="sub">계획(Plan) → 실제로 한 일(Do) → 돌아보기(See)</div>
       </div>
-      <button class="btn" id="btn-export">내 자료 전체 내보내기</button>
+      <div class="row">
+        <button class="btn" id="btn-export">내 자료 전체 내보내기</button>
+        <button class="btn danger" id="btn-delete-account">계정·자료 삭제</button>
+        <button class="btn" id="btn-logout">로그아웃</button>
+      </div>
     </header>
 
     <nav class="tabs">
@@ -35,7 +41,6 @@
   </div>
 
   <div class="toast" id="toast"></div>
-
   <script type="module" src="./app.js"></script>
 </body>
 </html>
