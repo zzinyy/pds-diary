@@ -230,3 +230,8 @@ th { color: var(--text-muted); font-weight: 600; font-size: 12.5px; }
 .history-item .when { color: var(--text-muted); }
 
 table td.wrap-text { max-width: 260px; white-space: normal; word-break: break-word; }
+
+button.btn.danger { color: var(--danger); border-color: var(--danger); background: transparent; }
+.auth-tabs { display:flex; gap:8px; margin-bottom:14px; }
+.auth-tabs button.active { color: var(--accent); font-weight:600; }
+.auth-error { color: var(--danger); font-size: 13px; margin-top: 8px; }
