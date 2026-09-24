@@ -243,7 +243,7 @@ function computeReview() {
   const doneItems = target.filter((t) => t.status === "완료");
   const delayedItems = target.filter((t) => t.status !== "완료" && t.deadline && t.deadline < today);
   const blockedItems = target.filter((t) => blockersByTodo(t.id).length > 0);
-  const estSum = target.reduce((s, t) => s + (Number(t.estimated_hours) || 0), 0);
+  const estSum = Number(state.plan?.estimated_hours) || 0;
   const targetIds = new Set(target.map((t) => t.id));
   const actSum = state.executions.filter((e) => targetIds.has(e.todo_id)).reduce((s, e) => s + (Number(e.actual_hours) || 0), 0);
   return { target, planCount: target.length, doneItems, delayedItems, blockedItems, estSum, actSum, diff: actSum - estSum };
